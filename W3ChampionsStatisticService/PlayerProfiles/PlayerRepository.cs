@@ -58,11 +58,14 @@ namespace W3ChampionsStatisticService.PlayerProfiles
             return UpsertMany(winrate);
         }
 
-        public async Task<List<int>> LoadMmrs(int season)
+
+        public async Task<List<int>> LoadMmrs(int season, GateWay gateWay, GameMode gameMode)
         {
             var mongoCollection = CreateCollection<PlayerOverview>();
             var mmrs = await mongoCollection
-                .Find(p => p.Season == season)
+                .Find(p => p.Season == season &&
+                           p.GateWay == gateWay &&
+                           p.GameMode == gameMode)
                 .Project(p => p.MMR)
                 .ToListAsync();
             return mmrs;
@@ -197,6 +200,16 @@ namespace W3ChampionsStatisticService.PlayerProfiles
             }
 
             return result;
+        }
+
+        public Task<PlayerMmrTimeline> LoadPlayerMmrTimeline(string battleTag, Race race, GateWay gateWay, int season)
+        {
+            return LoadFirst<PlayerMmrTimeline>($"{season}_{battleTag}_@{gateWay}_{race}");
+        }
+
+        public Task UpsertPlayerMmrTimeline(PlayerMmrTimeline mmrTimeline)
+        {
+            return Upsert(mmrTimeline);
         }
     }
 }
